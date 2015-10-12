@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8"/>
+    <title>Voteit</title>
+    <link rel="stylesheet" href="./es6/css/bootstrap.min.css" />
+    <style>
+        body {
+            background: #FAFAFA;
+        }
+        .badge-success {
+            background: #5cb85c;
+        }
+        .badge-danger {
+            background: #d9534f;
+        }
+        .list-group-item {
+            padding: 20px 15px;
+        }
+        .form-control,
+        .btn,
+        .badge {
+            border-radius: 0;
+        }
+        #feedForm {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+<div class="jumbotron text-center">
+    <h2>Voteit</h2>
+</div>
+<div id="app"></div>
+
+<script src="http://localhost:8080/build/vendor.bundle.js"></script>
+<script src="http://localhost:8080/build/bundle.js"></script>
+</body>
+</html>
