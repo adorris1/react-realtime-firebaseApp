@@ -1,7 +1,8 @@
 var http = require("http"),
   url = require("url"),
   path = require("path"),
-  fs = require("fs")
+  fs = require("fs"),
+  open = require("open"),
   port = 8090,
   args = process.argv[2],
   WebpackDevServer = require("webpack-dev-server"),
@@ -71,7 +72,14 @@ http.createServer(function(request, response) {
       response.end();
     });
   });
-}).listen(parseInt(port, 10));
+}).listen(parseInt(port, 10), '127.0.0.1', function(){
+  console.log('Launching the browser!');
+  var append = '';
+  if (args === '-dev') {
+    append = '/dev.html'
+  }
+  open('http://127.0.0.1:' + port + append);
+});
 
 
 
