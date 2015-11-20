@@ -8,9 +8,50 @@ var http = require("http"),
   WebpackDevServer = require("webpack-dev-server"),
   webpack = require("webpack"),
   config = require('./webpack.config'),
-  compiler = webpack(config.development);
+  compiler = webpack(config.development),
+  serverInstance = null;
 
+var serverLocal = function () {
+  serverInstance = http.createServer(function(request, response) {
+    var uri = url.parse(request.url).pathname
+      , filename = path.join(process.cwd(), uri);
+
+    fs.exists(filename, function(exists) {
+      if(!exists) {
+        return;
+      }
+
+      if (fs.statSync(filename).isDirectory()) filename += '/index.html';
+
+      fs.readFile(filename, "binary", function(err, file) {
+        if(err) {
+          response.writeHead(500, {"Content-Type": "text/plain"});
+          response.write(err + "\n");
+          response.end();
+          return;
+        }
+
+        response.writeHead(200);
+        response.write(file, "binary");
+        response.end();
+      });
+    });
+  }).listen(parseInt(port, 10), '127.0.0.1', function(){
+    console.log('Launching the browser!');
+    var append = '';
+    if (args === '-dev') {
+      append = '/dev.html';
+      console.log("Static file server running at\n  => http://localhost:" + port + "/dev.html\nCTRL + C to shutdown");
+    }else {
+      console.log("Static file server running at\n  => http://localhost:" + port + "/\nCTRL + C to shutdown");
+    }
+    open('http://127.0.0.1:' + port + append);
+  });
+};
 if (args === '-dev') {
+  compiler.plugin("done", function() {
+    if(!serverInstance) serverLocal();
+  });
   console.log('STARTING DEV SERVER');
   var server = new WebpackDevServer(compiler, {
     contentBase: "/build",
@@ -28,59 +69,20 @@ if (args === '-dev') {
     if (err) {
       throw err;
     }
-
     console.log('Please wait for source code');
-    console.log("Static file server running at\n  => http://localhost:" + port + "/dev.html\nCTRL + C to shutdown");
-
   });
 }else if(args === '-build'){
+  console.log('STARTING BUILDING.....');
   webpack(config.production, function(err, stats) {
-    console.log('STARTING BUILDING.....');
-    console.log("Static file server running at\n  => http://localhost:" + port + "/\nCTRL + C to shutdown");
     if (err) {
       throw err;
     }
-
     console.log(stats.toString({
       colors: true
     }));
+    serverLocal();
   });
 }
-
-http.createServer(function(request, response) {
-
-  var uri = url.parse(request.url).pathname
-    , filename = path.join(process.cwd(), uri);
-
-  fs.exists(filename, function(exists) {
-    if(!exists) {
-      return;
-    }
-
-    if (fs.statSync(filename).isDirectory()) filename += '/index.html';
-
-    fs.readFile(filename, "binary", function(err, file) {
-      if(err) {
-        response.writeHead(500, {"Content-Type": "text/plain"});
-        response.write(err + "\n");
-        response.end();
-        return;
-      }
-
-      response.writeHead(200);
-      response.write(file, "binary");
-      response.end();
-    });
-  });
-}).listen(parseInt(port, 10), '127.0.0.1', function(){
-  console.log('Launching the browser!');
-  var append = '';
-  if (args === '-dev') {
-    append = '/dev.html'
-  }
-  open('http://127.0.0.1:' + port + append);
-});
-
 
 
 
